@@ -230,39 +230,38 @@ input[type="text"]:focus { outline: none; border-color: #7c9ef8; }
 </div>
 
 <script>
-// ── Default library ──────────────────────────────────────────────
 const DEFAULT_DATA = {
   "Camera Angles": [
-    "Dutch tilt close-up shot at 30-degree angle, diagonal horizon, intimate facial framing, 50mm lens, creating psychological tension. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Extreme low-angle shot from floor level, looking up at 80-degree angle, dramatic backlighting creating silhouette, full-body vertical framing, 24mm lens, powerful presence. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Top-down shot with circular cropping, abstract circular composition, even diffused lighting eliminating shadows, circular head and shoulders framing, 50mm lens, modern stylized portraiture. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Three-quarter shot with 35-degree camera tilt, medium shot capturing torso and head, dramatic side lighting creating strong shadows, diagonal body framing, 40mm lens, dynamic composition. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "High-angle shot positioned directly above, looking down at 70-degree angle, soft overhead diffused lighting, full-body with environmental context framing, 28mm lens, detached observational perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Low-angle shot from waist height, looking up at 45-degree angle, warm key light from below creating upward shadows, medium shot framing torso and head, 50mm lens, intimate perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Close-up shot with 20-degree camera tilt, focusing on facial features, soft directional lighting from the side, tight face framing, 85mm lens, psychological intensity. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Extreme wide shot capturing subject within vast landscape, dramatic perspective with subject as small element, natural lighting conditions, full-body with expansive environment framing, 16mm ultra-wide lens, epic scale. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Extreme macro shot focused solely on one eye, directional lighting to highlight iris details and reflections, tight eye-only framing, 100mm macro lens, intimate revealing portraiture. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Side profile shot with 15-degree camera tilt, medium close-up focusing on one side of the face, soft directional lighting from above, tight head and shoulder framing, 85mm lens, contemplative tension. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Extreme Dutch tilt shot at 45-degree angle, diagonal horizon, disorienting perspective, 35mm lens, creating visual tension. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Worm's eye close-up from ground level, looking up at 85-degree angle, extreme upward perspective, tight framing, 24mm lens, imposing presence. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Bird's eye profile shot from directly above, 90-degree downward angle, top-down perspective of profile, circular framing, 50mm lens, observational detachment. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Dutch full body shot with 25-degree tilt, vertical framing with diagonal composition, environmental context, 28mm lens, dynamic tension. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Low-angle extreme close-up from knee height, looking up at 60-degree angle, intimate upward perspective, tight facial framing, 85mm lens, psychological dominance. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Overhead medium shot from directly above, 75-degree downward angle, balanced composition, torso and head framing, 40mm lens, neutral perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Dutch medium close-up with 20-degree tilt, diagonal composition, chest and head framing, 50mm lens, subtle psychological effect. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Extreme low-angle wide shot from ankle height, looking up at 70-degree angle, dramatic upward perspective, full-body framing, 16mm ultra-wide lens, monumental presence. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Top-down extreme close-up from directly above, 90-degree downward angle, abstract composition, tight feature framing, 100mm macro lens, analytical perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Dutch three-quarter shot with 30-degree tilt from waist height, looking up at 40-degree angle, diagonal upward perspective, torso and head framing, 35mm lens, dynamic composition. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "High-angle profile shot from above, looking down at 60-degree angle, side perspective with downward angle, head and shoulders framing, 85mm lens, vulnerable perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Low-angle Dutch wide shot from ground level, 35-degree tilt with 70-degree upward angle, diagonal upward perspective, full-body framing, 24mm lens, dramatic tension. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Overhead Dutch close-up with 15-degree tilt from directly above, diagonal top-down perspective, tight facial framing, 50mm lens, unsettling effect. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Extreme high-angle medium shot from directly above, looking down at 80-degree angle, steep downward perspective, torso and head framing, 40mm lens, power imbalance. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Dutch low-angle close-up with 25-degree tilt from chest height, looking up at 50-degree angle, diagonal upward perspective, tight facial framing, 85mm lens, psychological intensity. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Top-down three-quarter shot from directly above, 75-degree downward angle, balanced composition, torso and head framing, 50mm lens, observational perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Extreme Dutch profile shot with 40-degree tilt, diagonal side composition, profile framing, 85mm lens, disorienting perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Low-angle medium Dutch shot from waist height, 20-degree tilt with 45-degree upward angle, diagonal upward perspective, torso and head framing, 35mm lens, dynamic tension. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "High-angle Dutch wide shot from above, 30-degree tilt with 65-degree downward angle, diagonal downward perspective, full-body framing, 28mm lens, dramatic observation. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
-    "Extreme low-angle Dutch close-up from ground level, 35-degree tilt with 80-degree upward angle, diagonal upward perspective, tight facial framing, 50mm lens, intense psychological effect. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same."
+    "Dutch tilt close-up shot at 30-degree angle, diagonal horizon, intimate facial framing, creating psychological tension. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Extreme low-angle shot from floor level, looking up at 80-degree angle, dramatic backlighting creating silhouette, full-body vertical framing, powerful presence. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Top-down shot with circular cropping, abstract circular composition, even diffused lighting eliminating shadows, circular head and shoulders framing, modern stylized portraiture. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Three-quarter shot with 35-degree camera tilt, medium shot capturing torso and head, dramatic side lighting creating strong shadows, diagonal body framing, dynamic composition. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "High-angle shot positioned directly above, looking down at 70-degree angle, soft overhead diffused lighting, full-body framing, detached observational perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Low-angle shot from waist height, looking up at 45-degree angle, warm key light from below creating upward shadows, medium shot framing torso and head, intimate perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Close-up shot with 20-degree camera tilt, focusing on facial features, soft directional lighting from the side, tight face framing, psychological intensity. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Extreme wide shot capturing subject within full scene, dramatic perspective with subject as small element, natural lighting conditions, full-body wide framing, epic scale. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Extreme macro shot focused solely on one eye, directional lighting to highlight iris details and reflections, tight eye-only framing, intimate revealing portraiture. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Side profile shot with 15-degree camera tilt, medium close-up focusing on one side of the face, soft directional lighting from above, tight head and shoulder framing, contemplative tension. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Extreme Dutch tilt shot at 45-degree angle, diagonal horizon, disorienting perspective, creating visual tension. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Worm's eye close-up from ground level, looking up at 85-degree angle, extreme upward perspective, tight framing, imposing presence. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Bird's eye profile shot from directly above, 90-degree downward angle, top-down perspective of profile, circular framing, observational detachment. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Dutch full body shot with 25-degree tilt, vertical framing with diagonal composition, full-body framing, dynamic tension. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Low-angle extreme close-up from knee height, looking up at 60-degree angle, intimate upward perspective, tight facial framing, psychological dominance. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Overhead medium shot from directly above, 75-degree downward angle, balanced composition, torso and head framing, neutral perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Dutch medium close-up with 20-degree tilt, diagonal composition, chest and head framing, subtle psychological effect. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Extreme low-angle wide shot from ankle height, looking up at 70-degree angle, dramatic upward perspective, full-body framing, monumental presence. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Top-down extreme close-up from directly above, 90-degree downward angle, abstract composition, tight feature framing, analytical perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Dutch three-quarter shot with 30-degree tilt from waist height, looking up at 40-degree angle, diagonal upward perspective, torso and head framing, dynamic composition. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "High-angle profile shot from above, looking down at 60-degree angle, side perspective with downward angle, head and shoulders framing, vulnerable perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Low-angle Dutch wide shot from ground level, 35-degree tilt with 70-degree upward angle, diagonal upward perspective, full-body framing, dramatic tension. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Overhead Dutch close-up with 15-degree tilt from directly above, diagonal top-down perspective, tight facial framing, unsettling effect. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Extreme high-angle medium shot from directly above, looking down at 80-degree angle, steep downward perspective, torso and head framing, power imbalance. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Dutch low-angle close-up with 25-degree tilt from chest height, looking up at 50-degree angle, diagonal upward perspective, tight facial framing, psychological intensity. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Top-down three-quarter shot from directly above, 75-degree downward angle, balanced composition, torso and head framing, observational perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Extreme Dutch profile shot with 40-degree tilt, diagonal side composition, profile framing, disorienting perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Low-angle medium Dutch shot from waist height, 20-degree tilt with 45-degree upward angle, diagonal upward perspective, torso and head framing, dynamic tension. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "High-angle Dutch wide shot from above, 30-degree tilt with 65-degree downward angle, diagonal downward perspective, full-body framing, dramatic observation. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
+    "Extreme low-angle Dutch close-up from ground level, 35-degree tilt with 80-degree upward angle, diagonal upward perspective, tight facial framing, intense psychological effect. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same."
   ],
   "Lens & Optical": [
     "Render with a 35mm lens, shallow depth of field, focus on subject's face. Preserve environment blur. Everything else stays the same.",
@@ -395,15 +394,13 @@ const DEFAULT_DATA = {
 
 const CONSISTENCY = 'The character must remain absolutely identical to the original in every detail — face, facial structure, hair color, hair style, body proportions, physique, breast size, fitness level, clothing, and all anatomical features. Total character consistency across every aspect of their appearance, exactly as they appear in the source image.';
 
-// ── State ─────────────────────────────────────────────────────────
 let data = {};
 let activeCategories = {};
-let disabledPrompts = {}; // key: 'cat::index', value: true
+let disabledPrompts = {};
 let cooldownLength = 5;
 let cooldownMap = {};
 let genCount = 0;
 
-// ── Persistence ───────────────────────────────────────────────────
 function saveState() {
   try {
     localStorage.setItem('promptimizer_data', JSON.stringify(data));
@@ -429,7 +426,6 @@ function loadState() {
   }
 }
 
-// ── Mobile sidebar ────────────────────────────────────────────────
 function openSidebar() {
   document.getElementById('sidebar').classList.add('open');
   document.getElementById('overlay').classList.add('show');
@@ -439,7 +435,6 @@ function closeSidebar() {
   document.getElementById('overlay').classList.remove('show');
 }
 
-// ── Tabs ──────────────────────────────────────────────────────────
 function showTab(tab, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -450,7 +445,6 @@ function showTab(tab, btn) {
   if (tab === 'edit') renderEditor();
 }
 
-// ── Category list (sidebar) ───────────────────────────────────────
 function renderCatList() {
   const el = document.getElementById('cat-list');
   el.innerHTML = '';
@@ -459,7 +453,6 @@ function renderCatList() {
     const item = document.createElement('div');
     item.className = 'cat-item';
     item.id = 'catitem-' + btoa(encodeURIComponent(cat)).replace(/=/g,'');
-
     const header = document.createElement('div');
     header.className = 'cat-header';
     header.innerHTML = `
@@ -472,7 +465,6 @@ function renderCatList() {
       if (e.target.classList.contains('cat-toggle')) return;
       item.classList.toggle('expanded');
     };
-
     const promptsDiv = document.createElement('div');
     promptsDiv.className = 'cat-prompts';
     data[cat].forEach((p, i) => {
@@ -486,7 +478,6 @@ function renderCatList() {
       `;
       promptsDiv.appendChild(row);
     });
-
     item.appendChild(header);
     item.appendChild(promptsDiv);
     el.appendChild(item);
@@ -514,7 +505,6 @@ function toggleAll(state) {
   renderCatList();
 }
 
-// ── Generate ──────────────────────────────────────────────────────
 function stripSuffix(text) {
   return text.replace(/[\s.,]*everything else stays the same\.?/gi, '').trim().replace(/\.$/, '');
 }
@@ -528,30 +518,33 @@ function generatePrompt() {
   genCount++;
   const selected = Object.keys(data).filter(k => activeCategories[k]);
   if (selected.length === 0) { alert('Enable at least one category.'); return; }
-
   const picks = [];
   const pickDetails = [];
-
   for (const cat of selected) {
-    const pool = data[cat]
-      .map((p, i) => ({ p, i }))
-      .filter(({ i }) => !disabledPrompts[cat + '::' + i]);
+    const pool = data[cat].map((p, i) => ({ p, i })).filter(({ i }) => !disabledPrompts[cat + '::' + i]);
     if (pool.length === 0) continue;
-
     const available = pool.filter(({ i }) => {
       const lastUsed = cooldownMap[cat + '::' + i];
       return lastUsed === undefined || (genCount - lastUsed) > cooldownLength;
     });
-
-    const chooseFrom = available.length > 0 ? available : pool;
+    let chooseFrom;
+    if (available.length > 0) {
+      chooseFrom = available;
+    } else {
+      const sorted = pool.slice().sort((a, b) => {
+        const la = cooldownMap[cat + '::' + a.i] || 0;
+        const lb = cooldownMap[cat + '::' + b.i] || 0;
+        return la - lb;
+      });
+      const lruCount = Math.max(1, Math.ceil(sorted.length / 3));
+      chooseFrom = sorted.slice(0, lruCount);
+    }
     const chosen = chooseFrom[Math.floor(Math.random() * chooseFrom.length)];
     cooldownMap[cat + '::' + chosen.i] = genCount;
     picks.push(stripSuffix(chosen.p));
     pickDetails.push({ cat, pick: chosen.p, cooledOut: available.length === 0 });
   }
-
   if (picks.length === 0) { alert('No enabled prompts found.'); return; }
-
   document.getElementById('output-picks').innerHTML = pickDetails.map(p => `
     <div class="pick-row">
       <span class="pick-label">${p.cat}</span>
@@ -559,12 +552,10 @@ function generatePrompt() {
       <span class="pick-text">${p.pick.substring(0,90)}${p.pick.length>90?'…':''}</span>
     </div>
   `).join('');
-
   const customOn = document.getElementById('custom-end-toggle').checked;
   const customText = document.getElementById('custom-end-text').value.trim();
   let final = picks.join(' ') + ' Everything else stays the same. ' + CONSISTENCY;
   if (customOn && customText) final += ' ' + customText;
-
   document.getElementById('output-text').value = final;
   document.getElementById('output-box').style.display = 'block';
   document.getElementById('copy-btn').textContent = 'Copy';
@@ -578,7 +569,6 @@ function copyPrompt() {
   });
 }
 
-// ── Editor ────────────────────────────────────────────────────────
 function renderEditor() {
   const el = document.getElementById('editor-cats');
   el.innerHTML = '';
@@ -586,14 +576,12 @@ function renderEditor() {
     const sec = document.createElement('div');
     sec.className = 'editor-section';
     const safeId = btoa(encodeURIComponent(cat)).replace(/=/g,'');
-
     let promptsHtml = data[cat].map((p, i) => `
       <div class="prompt-item">
         <textarea onchange="updatePrompt('${cat.replace(/'/g,"\\'")}',${i},this.value)">${p}</textarea>
         <button class="del-btn" onclick="deletePrompt('${cat.replace(/'/g,"\\'")}',${i})">✕</button>
       </div>
     `).join('');
-
     sec.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;flex-wrap:wrap;">
         <h3 style="flex:1;min-width:0;">${cat} <span style="font-weight:400;color:#555;font-size:11px;">${data[cat].length} prompts</span></h3>
@@ -613,18 +601,12 @@ function renderEditor() {
   });
 }
 
-function updatePrompt(cat, i, val) {
-  data[cat][i] = val;
-  saveState();
-}
+function updatePrompt(cat, i, val) { data[cat][i] = val; saveState(); }
 
 function deletePrompt(cat, i) {
   data[cat].splice(i, 1);
-  const key = cat + '::' + i;
-  delete disabledPrompts[key];
-  saveState();
-  renderEditor();
-  renderCatList();
+  delete disabledPrompts[cat + '::' + i];
+  saveState(); renderEditor(); renderCatList();
 }
 
 function bulkAdd(cat, safeId) {
@@ -633,41 +615,30 @@ function bulkAdd(cat, safeId) {
   if (lines.length === 0) return;
   data[cat].push(...lines);
   ta.value = '';
-  saveState();
-  renderEditor();
-  renderCatList();
+  saveState(); renderEditor(); renderCatList();
   showToast(`Added ${lines.length} prompt${lines.length > 1 ? 's' : ''}`);
 }
 
 function deleteCategory(cat) {
   if (!confirm('Delete "' + cat + '" and all its prompts?')) return;
-  delete data[cat];
-  delete activeCategories[cat];
+  delete data[cat]; delete activeCategories[cat];
   Object.keys(disabledPrompts).forEach(k => { if (k.startsWith(cat + '::')) delete disabledPrompts[k]; });
-  saveState();
-  renderEditor();
-  renderCatList();
+  saveState(); renderEditor(); renderCatList();
 }
 
 function addCategory() {
   const input = document.getElementById('new-cat-name');
   const name = input.value.trim();
   if (!name || data[name]) return;
-  data[name] = [];
-  activeCategories[name] = true;
-  input.value = '';
-  saveState();
-  renderEditor();
-  renderCatList();
+  data[name] = []; activeCategories[name] = true; input.value = '';
+  saveState(); renderEditor(); renderCatList();
 }
 
-// ── Import / Export ───────────────────────────────────────────────
 function exportJSON() {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'promptimizer_library.json';
-  a.click();
+  a.download = 'promptimizer_library.json'; a.click();
 }
 
 function importJSON(e) {
@@ -677,9 +648,7 @@ function importJSON(e) {
     try {
       const imported = JSON.parse(ev.target.result);
       Object.keys(imported).forEach(k => { data[k] = imported[k]; activeCategories[k] = true; });
-      saveState();
-      renderCatList();
-      renderEditor();
+      saveState(); renderCatList(); renderEditor();
       showToast('Imported ' + Object.keys(imported).length + ' categories');
     } catch { alert('Invalid JSON file.'); }
   };
@@ -687,7 +656,6 @@ function importJSON(e) {
 }
 
 function saveAsHTML() {
-  // Inject current data into a fresh copy of this page
   const src = document.documentElement.outerHTML;
   const updated = src.replace(
     /const DEFAULT_DATA = \{[\s\S]*?\};\n\n/,
@@ -696,26 +664,19 @@ function saveAsHTML() {
   const blob = new Blob([updated], { type: 'text/html' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'promptimizer.html';
-  a.click();
+  a.download = 'promptimizer.html'; a.click();
   showToast('Saved as HTML');
 }
 
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg + ' ✓';
-  t.classList.add('show');
+  t.textContent = msg + ' ✓'; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-// ── Init ──────────────────────────────────────────────────────────
 loadState();
 renderCatList();
-
-// PWA service worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(() => {}); }
 </script>
 </body>
 </html>
