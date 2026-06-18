@@ -230,6 +230,7 @@ input[type="text"]:focus { outline: none; border-color: #7c9ef8; }
 </div>
 
 <script>
+// ── Default library ──────────────────────────────────────────────
 const DEFAULT_DATA = {
   "Camera Angles": [
     "Dutch tilt close-up shot at 30-degree angle, diagonal horizon, intimate facial framing, creating psychological tension. qwen image edit camera angle control. Keep subject's expression and pose exactly as is. Everything else stays the same.",
@@ -271,7 +272,7 @@ const DEFAULT_DATA = {
     "Fisheye 8mm lens, circular distortion effect, preserve distortion at edges, keep central elements proportionally accurate. Everything else stays the same.",
     "Tilt-shift 50mm lens, miniature effect, selective focus on middle ground, maintain vertical lines in architecture. Everything else stays the same.",
     "Pinhole camera effect, infinite depth of field, vignette edges, preserve dreamlike soft focus throughout. Everything else stays the same.",
-    "Anamorphic 40mm lens, widescreen aspect ratio, maintain oval bokeh in out-of-focus areas. Everything else stays the same.",
+    "Anamorphic 40mm lens, widescreen aspect ratio, blue streak flares, maintain oval bokeh in out-of-focus areas. Everything else stays the same.",
     "Soft focus filter, 85mm portrait lens, glowing highlights, preserve skin texture while softening overall image. Everything else stays the same.",
     "Lensbaby 50mm, sweet spot focus, extreme blur in periphery, maintain sharpness only in central area. Everything else stays the same.",
     "Infrared simulation, 35mm lens, false color processing, preserve high contrast between vegetation and sky. Everything else stays the same."
@@ -283,7 +284,7 @@ const DEFAULT_DATA = {
     "Create neon glow effect with pink and blue light sources. Keep subject's expression and pose exactly as is. Everything else stays the same.",
     "Transform to golden hour lighting with warm orange tones. Preserve background elements and spatial relationships. Everything else stays the same.",
     "Add spotlight effect from above with subtle edge lighting. Maintain original color temperature of environment. Everything else stays the same.",
-    "Implement moody Rembrandt lighting. Keep background details unchanged. Everything else stays the same.",
+    "Implement moody Rembrandt lighting with triangular highlight on cheek. Keep background details unchanged. Everything else stays the same.",
     "Apply softbox lighting from front-left with gentle fill light. Preserve existing highlights and shadows on subject. Everything else stays the same.",
     "Create party atmosphere with multicolored disco ball reflections. Maintain subject's current position and orientation. Everything else stays the same.",
     "Add firelight flickering effect with warm orange glow. Keep background elements and composition intact. Everything else stays the same.",
@@ -389,18 +390,44 @@ const DEFAULT_DATA = {
     "Position the character in a formal garden with manicured hedges and flowers. Maintain the character's original pose and expression. Add soft natural lighting and botanical shadows. Everything else stays the same.",
     "Move the character to an abandoned warehouse with concrete floors and metal beams. Preserve the character's original pose, clothing, and expression. Add dramatic lighting through broken windows. Everything else stays the same.",
     "Place the character on a wooden dock by a calm lake at sunset. Maintain the character's original pose and expression. Add warm golden hour lighting and water reflections. Everything else stays the same."
+  ],
+  "Camera Angles (Advanced)": [
+    "A low-angle shot positioned at navel-level, looking up to create a powerful perspective that emphasizes the rise of the chest and the defined lines of the lower abdominals. Everything else stays the same.",
+    "An extreme close-up from a 90-degree side profile, capturing the silhouette curve of the breast and the taut plane of the stomach. Everything else stays the same.",
+    "A worm's-eye view from directly below, making the torso loom overhead and forcing the abdominal muscles to contract under their own weight. Everything else stays the same.",
+    "An overhead shot looking straight down, flattening the perspective to highlight the breadth of the chest and the symmetrical lines of the obliques. Everything else stays the same.",
+    "A Dutch angle shot tilted at 45 degrees, creating a dynamic tension across the torso and drawing a diagonal line from the breast to the hip. Everything else stays the same.",
+    "A macro shot focused on the solar plexus, with the rest of the torso falling into a soft, shallow depth of field. Everything else stays the same.",
+    "A shot from behind the character's shoulder, looking down their own front to emphasize the cleavage and the vertical lines of the abdominals. Everything else stays the same.",
+    "A three-quarter shot from slightly above, compressing the torso slightly to push the chest forward and shadow the muscles beneath. Everything else stays the same.",
+    "A shot through a sheer, out-of-focus foreground element like a curtain or plant leaves, drawing the eye to the sharp details of the chest and stomach. Everything else stays the same.",
+    "A wide-angle shot from very close, causing a subtle distortion that elongates the torso and makes the central elements of the chest and abs appear more prominent. Everything else stays the same."
+  ],
+  "Poses (Advanced)": [
+    "The character stands with hands clasped behind their back, shoulders pulled back and down, which pushes the chest forward and engages the entire abdominal wall. Everything else stays the same.",
+    "A slight spinal arch, with the head tilted back and hands on the hips, creating a deep stretch across the abdomen and lifting the ribcage. Everything else stays the same.",
+    "A seated pose, leaning back on their hands with knees bent, causing a powerful contraction of the lower abdominals and a natural lift of the chest. Everything else stays the same.",
+    "A standing side-twist, with one arm reaching overhead and the other across the body, defining the obliques and showing the breast from a new angle. Everything else stays the same.",
+    "The character lies on their side, propped up on one elbow, with the top leg bent and resting forward, which creates a beautiful line along the abs and showcases the natural shape of the breasts. Everything else stays the same.",
+    "A cat-cow inspired pose on all fours, with a deeply arched back, which both projects the chest forward and hollows the abdomen. Everything else stays the same.",
+    "A standing stretch, reaching one arm overhead and leaning to the opposite side, creating a long, lean line along the obliques and stretching the muscles of the chest. Everything else stays the same.",
+    "The character sits cross-legged, leaning forward slightly and resting their hands on their knees, causing the pectoral muscles to flex and the upper abdominals to tighten. Everything else stays the same.",
+    "A cobra pose lying on their stomach, hands placed beside the ribs and pressing up to lift the chest, creating a strong backbend and intense abdominal stretch. Everything else stays the same.",
+    "A simple standing pose with the character taking a deep, deliberate breath to expand the chest and contract the midsection at the same time. Everything else stays the same."
   ]
 };
 
 const CONSISTENCY = 'The character must remain absolutely identical to the original in every detail — face, facial structure, hair color, hair style, body proportions, physique, breast size, fitness level, clothing, and all anatomical features. Total character consistency across every aspect of their appearance, exactly as they appear in the source image.';
 
+// ── State ─────────────────────────────────────────────────────────
 let data = {};
 let activeCategories = {};
-let disabledPrompts = {};
+let disabledPrompts = {}; // key: 'cat::index', value: true
 let cooldownLength = 5;
 let cooldownMap = {};
 let genCount = 0;
 
+// ── Persistence ───────────────────────────────────────────────────
 function saveState() {
   try {
     localStorage.setItem('promptimizer_data', JSON.stringify(data));
@@ -426,6 +453,7 @@ function loadState() {
   }
 }
 
+// ── Mobile sidebar ────────────────────────────────────────────────
 function openSidebar() {
   document.getElementById('sidebar').classList.add('open');
   document.getElementById('overlay').classList.add('show');
@@ -435,6 +463,7 @@ function closeSidebar() {
   document.getElementById('overlay').classList.remove('show');
 }
 
+// ── Tabs ──────────────────────────────────────────────────────────
 function showTab(tab, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -445,6 +474,7 @@ function showTab(tab, btn) {
   if (tab === 'edit') renderEditor();
 }
 
+// ── Category list (sidebar) ───────────────────────────────────────
 function renderCatList() {
   const el = document.getElementById('cat-list');
   el.innerHTML = '';
@@ -453,6 +483,7 @@ function renderCatList() {
     const item = document.createElement('div');
     item.className = 'cat-item';
     item.id = 'catitem-' + btoa(encodeURIComponent(cat)).replace(/=/g,'');
+
     const header = document.createElement('div');
     header.className = 'cat-header';
     header.innerHTML = `
@@ -465,6 +496,7 @@ function renderCatList() {
       if (e.target.classList.contains('cat-toggle')) return;
       item.classList.toggle('expanded');
     };
+
     const promptsDiv = document.createElement('div');
     promptsDiv.className = 'cat-prompts';
     data[cat].forEach((p, i) => {
@@ -478,6 +510,7 @@ function renderCatList() {
       `;
       promptsDiv.appendChild(row);
     });
+
     item.appendChild(header);
     item.appendChild(promptsDiv);
     el.appendChild(item);
@@ -505,6 +538,7 @@ function toggleAll(state) {
   renderCatList();
 }
 
+// ── Generate ──────────────────────────────────────────────────────
 function stripSuffix(text) {
   return text.replace(/[\s.,]*everything else stays the same\.?/gi, '').trim().replace(/\.$/, '');
 }
@@ -518,24 +552,32 @@ function generatePrompt() {
   genCount++;
   const selected = Object.keys(data).filter(k => activeCategories[k]);
   if (selected.length === 0) { alert('Enable at least one category.'); return; }
+
   const picks = [];
   const pickDetails = [];
+
   for (const cat of selected) {
-    const pool = data[cat].map((p, i) => ({ p, i })).filter(({ i }) => !disabledPrompts[cat + '::' + i]);
+    const pool = data[cat]
+      .map((p, i) => ({ p, i }))
+      .filter(({ i }) => !disabledPrompts[cat + '::' + i]);
     if (pool.length === 0) continue;
+
     const available = pool.filter(({ i }) => {
       const lastUsed = cooldownMap[cat + '::' + i];
       return lastUsed === undefined || (genCount - lastUsed) > cooldownLength;
     });
+
     let chooseFrom;
     if (available.length > 0) {
       chooseFrom = available;
     } else {
+      // All on cooldown — pick least recently used so we never repeat the same one
       const sorted = pool.slice().sort((a, b) => {
         const la = cooldownMap[cat + '::' + a.i] || 0;
         const lb = cooldownMap[cat + '::' + b.i] || 0;
         return la - lb;
       });
+      // Pick randomly from the bottom third (oldest used) for some variety
       const lruCount = Math.max(1, Math.ceil(sorted.length / 3));
       chooseFrom = sorted.slice(0, lruCount);
     }
@@ -544,7 +586,9 @@ function generatePrompt() {
     picks.push(stripSuffix(chosen.p));
     pickDetails.push({ cat, pick: chosen.p, cooledOut: available.length === 0 });
   }
+
   if (picks.length === 0) { alert('No enabled prompts found.'); return; }
+
   document.getElementById('output-picks').innerHTML = pickDetails.map(p => `
     <div class="pick-row">
       <span class="pick-label">${p.cat}</span>
@@ -552,10 +596,12 @@ function generatePrompt() {
       <span class="pick-text">${p.pick.substring(0,90)}${p.pick.length>90?'…':''}</span>
     </div>
   `).join('');
+
   const customOn = document.getElementById('custom-end-toggle').checked;
   const customText = document.getElementById('custom-end-text').value.trim();
   let final = picks.join(' ') + ' Everything else stays the same. ' + CONSISTENCY;
   if (customOn && customText) final += ' ' + customText;
+
   document.getElementById('output-text').value = final;
   document.getElementById('output-box').style.display = 'block';
   document.getElementById('copy-btn').textContent = 'Copy';
@@ -569,6 +615,7 @@ function copyPrompt() {
   });
 }
 
+// ── Editor ────────────────────────────────────────────────────────
 function renderEditor() {
   const el = document.getElementById('editor-cats');
   el.innerHTML = '';
@@ -576,12 +623,14 @@ function renderEditor() {
     const sec = document.createElement('div');
     sec.className = 'editor-section';
     const safeId = btoa(encodeURIComponent(cat)).replace(/=/g,'');
+
     let promptsHtml = data[cat].map((p, i) => `
       <div class="prompt-item">
         <textarea onchange="updatePrompt('${cat.replace(/'/g,"\\'")}',${i},this.value)">${p}</textarea>
         <button class="del-btn" onclick="deletePrompt('${cat.replace(/'/g,"\\'")}',${i})">✕</button>
       </div>
     `).join('');
+
     sec.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;flex-wrap:wrap;">
         <h3 style="flex:1;min-width:0;">${cat} <span style="font-weight:400;color:#555;font-size:11px;">${data[cat].length} prompts</span></h3>
@@ -601,12 +650,18 @@ function renderEditor() {
   });
 }
 
-function updatePrompt(cat, i, val) { data[cat][i] = val; saveState(); }
+function updatePrompt(cat, i, val) {
+  data[cat][i] = val;
+  saveState();
+}
 
 function deletePrompt(cat, i) {
   data[cat].splice(i, 1);
-  delete disabledPrompts[cat + '::' + i];
-  saveState(); renderEditor(); renderCatList();
+  const key = cat + '::' + i;
+  delete disabledPrompts[key];
+  saveState();
+  renderEditor();
+  renderCatList();
 }
 
 function bulkAdd(cat, safeId) {
@@ -615,30 +670,41 @@ function bulkAdd(cat, safeId) {
   if (lines.length === 0) return;
   data[cat].push(...lines);
   ta.value = '';
-  saveState(); renderEditor(); renderCatList();
+  saveState();
+  renderEditor();
+  renderCatList();
   showToast(`Added ${lines.length} prompt${lines.length > 1 ? 's' : ''}`);
 }
 
 function deleteCategory(cat) {
   if (!confirm('Delete "' + cat + '" and all its prompts?')) return;
-  delete data[cat]; delete activeCategories[cat];
+  delete data[cat];
+  delete activeCategories[cat];
   Object.keys(disabledPrompts).forEach(k => { if (k.startsWith(cat + '::')) delete disabledPrompts[k]; });
-  saveState(); renderEditor(); renderCatList();
+  saveState();
+  renderEditor();
+  renderCatList();
 }
 
 function addCategory() {
   const input = document.getElementById('new-cat-name');
   const name = input.value.trim();
   if (!name || data[name]) return;
-  data[name] = []; activeCategories[name] = true; input.value = '';
-  saveState(); renderEditor(); renderCatList();
+  data[name] = [];
+  activeCategories[name] = true;
+  input.value = '';
+  saveState();
+  renderEditor();
+  renderCatList();
 }
 
+// ── Import / Export ───────────────────────────────────────────────
 function exportJSON() {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'promptimizer_library.json'; a.click();
+  a.download = 'promptimizer_library.json';
+  a.click();
 }
 
 function importJSON(e) {
@@ -648,7 +714,9 @@ function importJSON(e) {
     try {
       const imported = JSON.parse(ev.target.result);
       Object.keys(imported).forEach(k => { data[k] = imported[k]; activeCategories[k] = true; });
-      saveState(); renderCatList(); renderEditor();
+      saveState();
+      renderCatList();
+      renderEditor();
       showToast('Imported ' + Object.keys(imported).length + ' categories');
     } catch { alert('Invalid JSON file.'); }
   };
@@ -656,6 +724,7 @@ function importJSON(e) {
 }
 
 function saveAsHTML() {
+  // Inject current data into a fresh copy of this page
   const src = document.documentElement.outerHTML;
   const updated = src.replace(
     /const DEFAULT_DATA = \{[\s\S]*?\};\n\n/,
@@ -664,19 +733,26 @@ function saveAsHTML() {
   const blob = new Blob([updated], { type: 'text/html' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'promptimizer.html'; a.click();
+  a.download = 'promptimizer.html';
+  a.click();
   showToast('Saved as HTML');
 }
 
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg + ' ✓'; t.classList.add('show');
+  t.textContent = msg + ' ✓';
+  t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2200);
 }
 
+// ── Init ──────────────────────────────────────────────────────────
 loadState();
 renderCatList();
-if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(() => {}); }
+
+// PWA service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
