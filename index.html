@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Promptimizer">
+<meta name="theme-color" content="#7c9ef8">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Promptimizer</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #1a1a1a; color: #e0e0e0; min-height: 100vh; min-height: -webkit-fill-available; }
+
+/* Layout */
+.app { display: flex; height: 100vh; height: -webkit-fill-available; }
+.sidebar { width: 260px; min-width: 260px; background: #111; border-right: 1px solid #2a2a2a; display: flex; flex-direction: column; transition: transform 0.25s ease; }
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+/* Mobile overlay sidebar */
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99; }
+@media (max-width: 680px) {
+  .sidebar { position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; transform: translateX(-100%); width: 290px; }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.show { display: block; }
+  .mobile-menu-btn { display: flex !important; }
+}
+
+.sidebar-header { padding: 1rem; border-bottom: 1px solid #2a2a2a; display: flex; align-items: center; gap: 8px; }
+.sidebar-header h1 { font-size: 14px; font-weight: 700; color: #7c9ef8; letter-spacing: 0.05em; text-transform: uppercase; flex: 1; }
+.sidebar-tabs { display: flex; border-bottom: 1px solid #2a2a2a; }
+.tab-btn { flex: 1; padding: 9px; font-size: 12px; background: none; border: none; color: #666; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; font-family: inherit; }
+.tab-btn.active { color: #7c9ef8; border-bottom-color: #7c9ef8; }
+.sidebar-content { flex: 1; overflow-y: auto; padding: 0.75rem; }
+.sidebar-footer { padding: 0.75rem; border-top: 1px solid #2a2a2a; display: flex; flex-direction: column; gap: 6px; }
+
+/* Category list */
+.cat-item { border-radius: 6px; margin-bottom: 2px; border: 1px solid transparent; transition: background 0.1s; }
+.cat-item:hover { background: #1e1e1e; }
+.cat-header { display: flex; align-items: center; gap: 8px; padding: 6px 8px; cursor: pointer; }
+.cat-toggle { width: 15px; height: 15px; border: 1px solid #444; border-radius: 3px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; color: transparent; transition: all 0.15s; }
+.cat-toggle.on { background: #7c9ef8; border-color: #7c9ef8; color: #fff; }
+.cat-name { font-size: 13px; flex: 1; color: #ccc; user-select: none; }
+.cat-count { font-size: 11px; color: #555; }
+.cat-chevron { font-size: 10px; color: #444; transition: transform 0.2s; }
+.cat-item.expanded .cat-chevron { transform: rotate(90deg); }
+
+/* Prompt toggles inside category */
+.cat-prompts { display: none; padding: 0 8px 8px 8px; }
+.cat-item.expanded .cat-prompts { display: block; }
+.prompt-toggle-row { display: flex; align-items: flex-start; gap: 6px; padding: 4px 0; border-bottom: 1px solid #1e1e1e; }
+.prompt-toggle-row:last-child { border-bottom: none; }
+.prompt-chk { width: 13px; height: 13px; border: 1px solid #444; border-radius: 2px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 9px; color: transparent; cursor: pointer; margin-top: 2px; transition: all 0.15s; }
+.prompt-chk.on { background: #4a7a4a; border-color: #4a7a4a; color: #fff; }
+.prompt-short { font-size: 11px; color: #666; line-height: 1.4; cursor: pointer; flex: 1; }
+.prompt-short.on { color: #999; }
+
+.toggle-all-row { display: flex; gap: 6px; margin-bottom: 0.5rem; }
+
+/* Main header */
+.main-header { padding: 0.75rem 1rem; border-bottom: 1px solid #2a2a2a; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.main-header h2 { font-size: 13px; font-weight: 500; color: #777; flex: 1; }
+.mobile-menu-btn { display: none; background: none; border: 1px solid #333; border-radius: 6px; color: #aaa; padding: 5px 9px; font-size: 16px; cursor: pointer; }
+.main-body { flex: 1; overflow-y: auto; padding: 1rem; -webkit-overflow-scrolling: touch; }
+
+/* Cooldown bar */
+.cooldown-bar { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #111; border: 1px solid #2a2a2a; border-radius: 8px; margin-bottom: 10px; }
+.cooldown-bar label { font-size: 12px; color: #888; white-space: nowrap; }
+.cooldown-bar input[type=range] { flex: 1; accent-color: #7c9ef8; height: 4px; cursor: pointer; }
+.cooldown-val { font-size: 13px; font-weight: 600; color: #7c9ef8; min-width: 22px; text-align: center; }
+.cooldown-bar span.unit { font-size: 11px; color: #555; }
+
+/* Custom end text */
+.custom-end-bar { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; background: #111; border: 1px solid #2a2a2a; border-radius: 8px; margin-bottom: 10px; }
+.custom-end-bar textarea { flex: 1; background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 6px; color: #ddd; font-size: 12px; padding: 6px 8px; resize: none; font-family: inherit; min-height: 44px; line-height: 1.5; }
+.custom-end-bar textarea:focus { outline: none; border-color: #7c9ef8; }
+.custom-end-bar label { font-size: 11px; color: #888; white-space: nowrap; margin-top: 4px; }
+.toggle-switch { position: relative; width: 36px; height: 20px; flex-shrink: 0; margin-top: 4px; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-switch .slider { position: absolute; inset: 0; background: #333; border-radius: 20px; cursor: pointer; transition: 0.2s; }
+.toggle-switch .slider:before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: #888; border-radius: 50%; transition: 0.2s; }
+.toggle-switch input:checked + .slider { background: #7c9ef8; }
+.toggle-switch input:checked + .slider:before { transform: translateX(16px); background: #fff; }
+
+/* Gen button */
+.gen-btn { width: 100%; padding: 13px; font-size: 15px; font-weight: 600; background: #7c9ef8; color: #fff; border: none; border-radius: 8px; cursor: pointer; transition: background 0.15s; font-family: inherit; }
+.gen-btn:hover { background: #6b8ef0; }
+.gen-btn:active { background: #5a7ee8; transform: scale(0.99); }
+
+/* Output */
+.output-box { background: #111; border: 1px solid #2a2a2a; border-radius: 8px; padding: 1rem; margin-top: 10px; display: none; }
+.output-picks { margin-bottom: 0.75rem; display: flex; flex-direction: column; gap: 5px; }
+.pick-row { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
+.pick-label { font-size: 10px; padding: 2px 6px; background: #1e2a3a; color: #7c9ef8; border-radius: 4px; white-space: nowrap; margin-top: 2px; flex-shrink: 0; }
+.pick-text { font-size: 12px; color: #777; line-height: 1.5; flex: 1; min-width: 0; }
+.output-label { font-size: 10px; color: #555; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+.output-textarea { width: 100%; min-height: 130px; background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 6px; color: #e0e0e0; font-size: 13px; line-height: 1.6; padding: 0.75rem; resize: vertical; font-family: inherit; }
+.output-actions { display: flex; gap: 8px; margin-top: 8px; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 7px 13px; font-size: 12px; border-radius: 6px; cursor: pointer; border: 1px solid #333; background: #1e1e1e; color: #ccc; transition: all 0.1s; font-family: inherit; }
+.btn:hover { background: #2a2a2a; color: #fff; }
+.btn.primary { background: #7c9ef8; border-color: #7c9ef8; color: #fff; }
+.btn.primary:hover { background: #6b8ef0; }
+.btn.danger { border-color: #5a2a2a; color: #cc5555; }
+.btn.danger:hover { background: #2a1a1a; }
+
+/* Editor */
+.editor-section { background: #111; border: 1px solid #2a2a2a; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+.editor-section h3 { font-size: 13px; font-weight: 600; color: #ccc; margin-bottom: 0.75rem; }
+.prompt-item { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 6px; }
+.prompt-item textarea { flex: 1; background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 6px; color: #ddd; font-size: 12px; padding: 6px 8px; line-height: 1.5; resize: vertical; font-family: inherit; min-height: 52px; }
+.prompt-item textarea:focus { outline: none; border-color: #7c9ef8; }
+.del-btn { background: none; border: 1px solid #3a2a2a; color: #884444; padding: 5px 8px; border-radius: 5px; cursor: pointer; font-size: 12px; flex-shrink: 0; margin-top: 2px; }
+.del-btn:hover { background: #2a1a1a; color: #cc5555; }
+
+/* Bulk add */
+.bulk-area { width: 100%; min-height: 80px; background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 6px; color: #ddd; font-size: 12px; padding: 8px; resize: vertical; font-family: inherit; line-height: 1.5; }
+.bulk-area:focus { outline: none; border-color: #7c9ef8; }
+.bulk-row { display: flex; gap: 8px; align-items: flex-start; margin-top: 8px; }
+
+input[type="text"] { background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 6px; color: #ddd; font-size: 13px; padding: 7px 10px; font-family: inherit; }
+input[type="text"]:focus { outline: none; border-color: #7c9ef8; }
+
+.new-cat-row { display: flex; gap: 8px; align-items: center; }
+.divider { border: none; border-top: 1px solid #2a2a2a; margin: 0.75rem 0; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2e2e2e; border-radius: 3px; }
+
+.saved-toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: #2a4a2a; border: 1px solid #3a6a3a; color: #6aaa6a; padding: 8px 18px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200; }
+.saved-toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="saved-toast" id="toast">Saved ✓</div>
+
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h1>Promptimizer</h1>
+      <button class="btn" style="padding:4px 8px;font-size:11px;" onclick="closeSidebar()" id="close-sidebar-btn">✕</button>
+    </div>
+    <div class="sidebar-tabs">
+      <button class="tab-btn active" onclick="showTab('randomize',this)">Randomize</button>
+      <button class="tab-btn" onclick="showTab('edit',this)">Edit Library</button>
+    </div>
+    <div class="sidebar-content">
+      <div class="toggle-all-row">
+        <button class="btn" style="flex:1;" onclick="toggleAll(true)">All</button>
+        <button class="btn" style="flex:1;" onclick="toggleAll(false)">None</button>
+      </div>
+      <div id="cat-list"></div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn" onclick="exportJSON()">⬇ Export JSON</button>
+      <label class="btn" style="justify-content:center;cursor:pointer;">
+        ⬆ Import JSON
+        <input type="file" accept=".json" style="display:none;" onchange="importJSON(event)">
+      </label>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="main-header">
+      <button class="mobile-menu-btn" onclick="openSidebar()">☰</button>
+      <h2 id="main-title">Randomize prompts</h2>
+      <button class="btn primary" id="save-html-btn" onclick="saveAsHTML()" style="display:none;font-size:11px;padding:5px 10px;">💾 Save as HTML</button>
+    </div>
+    <div class="main-body">
+
+      <!-- Randomize panel -->
+      <div id="panel-randomize">
+        <!-- Cooldown -->
+        <div class="cooldown-bar">
+          <label>Cooldown</label>
+          <input type="range" min="1" max="10" value="5" id="cooldown-slider" oninput="cooldownLength=+this.value;document.getElementById('cooldown-val').textContent=this.value">
+          <span class="cooldown-val" id="cooldown-val">5</span>
+          <span class="unit">gens</span>
+          <button class="btn" style="font-size:11px;padding:4px 8px;" onclick="resetCooldown()">Reset</button>
+        </div>
+
+        <!-- Custom end text -->
+        <div class="custom-end-bar">
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:center;">
+            <label style="font-size:10px;color:#666;text-align:center;">Add<br>text</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="custom-end-toggle" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <textarea id="custom-end-text" placeholder="Custom text to append to every prompt..."></textarea>
+        </div>
+
+        <button class="gen-btn" onclick="generatePrompt()">🎲 Generate random prompt</button>
+
+        <div class="output-box" id="output-box">
+          <div class="output-picks" id="output-picks"></div>
+          <hr class="divider">
+          <div class="output-label">Combined prompt</div>
+          <textarea class="output-textarea" id="output-text" readonly></textarea>
+          <div class="output-actions">
+            <button class="btn primary" id="copy-btn" onclick="copyPrompt()" style="flex:1;">Copy</button>
+            <button class="btn" onclick="generatePrompt()" style="flex:1;">↺ Regenerate</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit panel -->
+      <div id="panel-edit" style="display:none;">
+        <div class="editor-section">
+          <h3>Add new category</h3>
+          <div class="new-cat-row">
+            <input type="text" id="new-cat-name" placeholder="Category name..." style="flex:1;">
+            <button class="btn primary" onclick="addCategory()">+ Add</button>
+          </div>
+        </div>
+        <div id="editor-cats"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Default library ──────────────────────────────────────────────
+const DEFAULT_DATA = {
+  "Camera Angles": [
+    "Dutch tilt close-up shot at 30-degree angle, diagonal horizon, intimate facial framing, 50mm lens, creating psychological tension. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Extreme low-angle shot from floor level, looking up at 80-degree angle, dramatic backlighting creating silhouette, full-body vertical framing, 24mm lens, powerful presence. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Top-down shot with circular cropping, abstract circular composition, even diffused lighting eliminating shadows, circular head and shoulders framing, 50mm lens, modern stylized portraiture. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Three-quarter shot with 35-degree camera tilt, medium shot capturing torso and head, dramatic side lighting creating strong shadows, diagonal body framing, 40mm lens, dynamic composition. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "High-angle shot positioned directly above, looking down at 70-degree angle, soft overhead diffused lighting, full-body with environmental context framing, 28mm lens, detached observational perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Low-angle shot from waist height, looking up at 45-degree angle, warm key light from below creating upward shadows, medium shot framing torso and head, 50mm lens, intimate perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Close-up shot with 20-degree camera tilt, focusing on facial features, soft directional lighting from the side, tight face framing, 85mm lens, psychological intensity. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Extreme wide shot capturing subject within vast landscape, dramatic perspective with subject as small element, natural lighting conditions, full-body with expansive environment framing, 16mm ultra-wide lens, epic scale. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Extreme macro shot focused solely on one eye, directional lighting to highlight iris details and reflections, tight eye-only framing, 100mm macro lens, intimate revealing portraiture. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Side profile shot with 15-degree camera tilt, medium close-up focusing on one side of the face, soft directional lighting from above, tight head and shoulder framing, 85mm lens, contemplative tension. qwen image edit camera angle control. Keep subject's expression and pose exactly as is."
+  ],
+  "Lens & Optical": [
+    "Render with a 35mm lens, shallow depth of field, focus on subject's face. Preserve environment blur.",
+    "Wide-angle 24mm lens, deep focus from foreground to background, golden hour lighting, preserve architectural details in landscape.",
+    "Macro 100mm lens, extreme close-up, f/2.8 aperture, isolate subject from background with minimal depth of field.",
+    "Telephoto 200mm lens, portrait orientation, center-weighted metering, maintain subject sharpness while compressing background.",
+    "Fisheye 8mm lens, circular distortion effect, preserve distortion at edges, keep central elements proportionally accurate.",
+    "Tilt-shift 50mm lens, miniature effect, selective focus on middle ground, maintain vertical lines in architecture.",
+    "Pinhole camera effect, infinite depth of field, vignette edges, preserve dreamlike soft focus throughout.",
+    "Anamorphic 40mm lens, widescreen aspect ratio, blue streak flares, maintain oval bokeh in out-of-focus areas.",
+    "Soft focus filter, 85mm portrait lens, glowing highlights, preserve skin texture while softening overall image.",
+    "Lensbaby 50mm, sweet spot focus, extreme blur in periphery, maintain sharpness only in central area.",
+    "Infrared simulation, 35mm lens, false color processing, preserve high contrast between vegetation and sky."
+  ],
+  "Lighting": [
+    "Relight the scene with a warm key light from the right and cool rim light from the back. Keep pose and background unchanged.",
+    "Add dramatic low-angle lighting from below with purple accents. Preserve original composition and subject positioning.",
+    "Apply cinematic god rays filtering through window from left. Maintain existing shadows and subject placement.",
+    "Create neon glow effect with pink and blue light sources. Keep subject's expression and pose exactly as is.",
+    "Transform to golden hour lighting with warm orange tones. Preserve background elements and spatial relationships.",
+    "Add spotlight effect from above with subtle edge lighting. Maintain original color temperature of environment.",
+    "Implement moody Rembrandt lighting with triangular highlight on cheek. Keep background details unchanged.",
+    "Apply softbox lighting from front-left with gentle fill light. Preserve existing highlights and shadows on subject.",
+    "Create party atmosphere with multicolored disco ball reflections. Maintain subject's current position and orientation.",
+    "Add firelight flickering effect with warm orange glow. Keep background elements and composition intact.",
+    "Implement high-contrast black and white lighting scheme. Preserve all original poses and spatial relationships."
+  ],
+  "Poses": [
+    "Subject reclines on a chaise lounge, one arm draped overhead, other hand resting on hip. Soft window lighting from the right creates gentle shadows.",
+    "Subject sits on the edge of a bed, legs crossed at ankles, leaning back on hands with arched back. Warm lamp lighting from behind creates a glowing outline.",
+    "Subject stands before a full-length mirror, looking over shoulder at reflection, one hand touching mirror surface. Soft diffused lighting from multiple sources.",
+    "Standing with one shoulder against a wall, weight shifted to one hip, one hand in pocket, other arm relaxed at side.",
+    "Feet shoulder-width apart, hands on hips, chest slightly forward, chin up, looking directly forward.",
+    "Weight on one leg, opposite knee slightly bent, arms creating an S-curve with body, head tilted at a slight angle.",
+    "Standing with arms crossed, head tilted downward slightly, one foot slightly in front of the other, weight shifted to back foot.",
+    "Mid-stride with one foot forward, arms swinging naturally opposite to legs, torso slightly twisted, hair or clothing showing movement.",
+    "Standing on tiptoes, arms raised overhead, body slightly arched backward, head tilted up with eyes closed.",
+    "One leg crossed in front of the other, hand on hip, other arm extended gracefully, head turned to the side with chin slightly raised.",
+    "Standing with weight evenly distributed, arms hanging naturally at sides, shoulders relaxed, head slightly tilted with a gentle smile.",
+    "Standing with one leg slightly bent, arms flexed showing muscle definition, torso turned at a three-quarter angle, expression focused and determined."
+  ],
+  "Expressions": [
+    "Enhance the eyes with a subtle sparkle, add a gentle upturn to the corners of the mouth, and soften the jawline for a naturally beautiful expression. Maintain the original head position.",
+    "Create a playful expression with a mischievous glint in the eyes, a slight smirk with one corner of the mouth raised higher than the other, and a tilted head. Preserve all other facial features.",
+    "Generate an embarrassed expression with flushed cheeks, eyes looking slightly downward and to the side, and a suppressed smile with lips pressed together. Keep the overall face structure unchanged.",
+    "Create a shocked expression with widened eyes, raised eyebrows, and a slightly open mouth with rounded lips. Preserve the original face shape and skin texture.",
+    "Create a seductive gaze with direct eye contact, slightly narrowed eyes, and a confident half-smile. Preserve the original facial structure and proportions.",
+    "Create a playful wink expression with one eye closed, a cheeky smile, and raised eyebrows. Keep the other facial features unchanged.",
+    "Create an embarrassed laugh expression with crinkled eyes, a wide smile showing teeth, and a hand partially covering the mouth. Preserve the original head position.",
+    "Enhance the sultry expression with smoldering eyes, slightly pursed lips, and a lowered chin. Maintain the existing skin texture and details.",
+    "Create a surprised flirtatious expression with wide eyes, raised eyebrows, and a slight open-mouthed smile. Preserve the original facial structure and proportions."
+  ],
+  "Perspectives": [
+    "Shot through a slightly distorted mirror, creating subtle wavering and reflections, soft lighting with mirror-enhanced highlights, medium framing, 50mm lens, surreal introspective perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Circular vignette framing simulating peephole perspective, slight distortion at edges, low-key lighting with central brightness, tight torso and head framing, 35mm lens. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Shot as if viewed through water surface, with subtle ripple distortions and light refractions, soft dappled lighting, medium framing, 50mm lens, dreamlike ethereal perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Shot through frosted glass with blurred edges and softened details, diffused even lighting, medium framing, 85mm lens, intimate obscured perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Multiple angled reflections creating geometric patterns, vibrant lighting with prismatic effects, abstract fragmented framing, 40mm lens. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Dual circular framing simulating binocular view, enhanced central clarity with vignette edges, natural outdoor lighting, medium framing, 70mm lens. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Shot through smoke with layered reflections, dramatic lighting with beam effects, medium framing, 50mm lens, mysterious layered perspective. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Spherical distortion with inverted edges, mystical lighting with central glow, circular framing, 85mm lens. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Geometric light refraction creating fragmented image, rainbow lighting effects, abstract multi-angle framing, 35mm lens. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Extreme close-up through water droplet with inverted magnification, bright backlighting creating rainbow effects, micro-framing, 100mm macro lens. qwen image edit camera angle control. Keep subject's expression and pose exactly as is."
+  ],
+  "Photo Effects": [
+    "Long exposure effect with light trails painted around subject, dark environment with colored light sources, full-body framing, 35mm lens. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Layered image with subject superimposed over natural landscape, balanced exposure for both layers, medium framing, 50mm lens, dreamlike conceptual effect. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Intentional lens flare with rainbow streaks crossing frame, backlit subject with strong light source, medium framing, 40mm lens, cinematic atmospheric effect. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Subject in sharp focus against motion-blurred background, slow shutter speed effect, medium framing, 85mm lens, dynamic movement effect. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "False color processing with white foliage and dark skies, high contrast between vegetation and sky, wide environmental framing, 35mm lens, otherworldly effect. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Monochrome image with single color element preserved, dramatic contrast between color and B&W, medium framing, 50mm lens, symbolic focus effect. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Creamy out-of-focus light circles overlaid on image, soft lighting with multiple light sources, medium framing, 85mm lens, dreamy romantic effect. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Subtle texture layer like film grain over image, even lighting to preserve texture detail, medium framing, 50mm lens, vintage tactile effect. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Partial reversal of tones creating surreal effect, high contrast lighting, medium framing, 40mm lens, avant-garde artistic effect. qwen image edit camera angle control. Keep subject's expression and pose exactly as is.",
+    "Tilt-shift simulation with selective focus and enhanced saturation, overhead perspective, wide environmental framing, 24mm lens, toylike diorama effect. qwen image edit camera angle control. Keep subject's expression and pose exactly as is."
+  ],
+  "Environment": [
+    "Move the character to a sandy beach with ocean waves in the background. Preserve the character's original pose, clothing, and expression. Add subtle wind effects on hair and clothing.",
+    "Place the character on a bustling city street with tall buildings and traffic. Maintain the character's original pose and expression. Add appropriate lighting for urban environment.",
+    "Relocate the character to a dense forest with dappled sunlight filtering through trees. Preserve the character's original pose, clothing, and expression. Add natural shadows from tree canopy.",
+    "Position the character on a mountain overlook with panoramic valley view. Maintain the character's original pose and expression. Add appropriate atmospheric perspective for distant elements.",
+    "Move the character to a desert environment with sand dunes and rock formations. Preserve the character's original pose, clothing, and expression. Add harsh sunlight and warm color grading.",
+    "Place the character in a cozy living room with fireplace and furniture. Maintain the character's original pose and expression. Add warm indoor lighting and appropriate shadows.",
+    "Relocate the character to a city rooftop at twilight with skyline view. Preserve the character's original pose, clothing, and expression. Add ambient city lights and blue hour color palette.",
+    "Position the character in a formal garden with manicured hedges and flowers. Maintain the character's original pose and expression. Add soft natural lighting and botanical shadows.",
+    "Move the character to an abandoned warehouse with concrete floors and metal beams. Preserve the character's original pose, clothing, and expression. Add dramatic lighting through broken windows.",
+    "Place the character on a wooden dock by a calm lake at sunset. Maintain the character's original pose and expression. Add warm golden hour lighting and water reflections."
+  ]
+};
+
+const CONSISTENCY = 'The character must remain absolutely identical to the original in every detail — face, facial structure, hair color, hair style, body proportions, physique, breast size, fitness level, clothing, and all anatomical features. Total character consistency across every aspect of their appearance, exactly as they appear in the source image.';
+
+// ── State ─────────────────────────────────────────────────────────
+let data = {};
+let activeCategories = {};
+let disabledPrompts = {}; // key: 'cat::index', value: true
+let cooldownLength = 5;
+let cooldownMap = {};
+let genCount = 0;
+
+// ── Persistence ───────────────────────────────────────────────────
+function saveState() {
+  try {
+    localStorage.setItem('promptimizer_data', JSON.stringify(data));
+    localStorage.setItem('promptimizer_cats', JSON.stringify(activeCategories));
+    localStorage.setItem('promptimizer_disabled', JSON.stringify(disabledPrompts));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const d = localStorage.getItem('promptimizer_data');
+    const c = localStorage.getItem('promptimizer_cats');
+    const dp = localStorage.getItem('promptimizer_disabled');
+    if (d) data = JSON.parse(d); else data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    if (c) activeCategories = JSON.parse(c);
+    else { activeCategories = {}; Object.keys(data).forEach(k => activeCategories[k] = true); }
+    if (dp) disabledPrompts = JSON.parse(dp); else disabledPrompts = {};
+  } catch(e) {
+    data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    activeCategories = {};
+    Object.keys(data).forEach(k => activeCategories[k] = true);
+    disabledPrompts = {};
+  }
+}
+
+// ── Mobile sidebar ────────────────────────────────────────────────
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────
+function showTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-randomize').style.display = tab === 'randomize' ? 'block' : 'none';
+  document.getElementById('panel-edit').style.display = tab === 'edit' ? 'block' : 'none';
+  document.getElementById('main-title').textContent = tab === 'randomize' ? 'Randomize prompts' : 'Edit prompt library';
+  document.getElementById('save-html-btn').style.display = tab === 'edit' ? 'inline-flex' : 'none';
+  if (tab === 'edit') renderEditor();
+}
+
+// ── Category list (sidebar) ───────────────────────────────────────
+function renderCatList() {
+  const el = document.getElementById('cat-list');
+  el.innerHTML = '';
+  Object.keys(data).forEach(cat => {
+    const enabledCount = data[cat].filter((_, i) => !disabledPrompts[cat + '::' + i]).length;
+    const item = document.createElement('div');
+    item.className = 'cat-item';
+    item.id = 'catitem-' + btoa(encodeURIComponent(cat)).replace(/=/g,'');
+
+    const header = document.createElement('div');
+    header.className = 'cat-header';
+    header.innerHTML = `
+      <div class="cat-toggle ${activeCategories[cat] ? 'on' : ''}" onclick="toggleCat('${cat.replace(/'/g,"\\'")}',event)">✓</div>
+      <span class="cat-name">${cat}</span>
+      <span class="cat-count">${enabledCount}/${data[cat].length}</span>
+      <span class="cat-chevron">▶</span>
+    `;
+    header.onclick = (e) => {
+      if (e.target.classList.contains('cat-toggle')) return;
+      item.classList.toggle('expanded');
+    };
+
+    const promptsDiv = document.createElement('div');
+    promptsDiv.className = 'cat-prompts';
+    data[cat].forEach((p, i) => {
+      const key = cat + '::' + i;
+      const enabled = !disabledPrompts[key];
+      const row = document.createElement('div');
+      row.className = 'prompt-toggle-row';
+      row.innerHTML = `
+        <div class="prompt-chk ${enabled ? 'on' : ''}" onclick="togglePrompt('${cat.replace(/'/g,"\\'")}',${i})">✓</div>
+        <span class="prompt-short ${enabled ? 'on' : ''}">${p.substring(0, 60)}${p.length > 60 ? '…' : ''}</span>
+      `;
+      promptsDiv.appendChild(row);
+    });
+
+    item.appendChild(header);
+    item.appendChild(promptsDiv);
+    el.appendChild(item);
+  });
+}
+
+function toggleCat(cat, e) {
+  e.stopPropagation();
+  activeCategories[cat] = !activeCategories[cat];
+  saveState();
+  renderCatList();
+}
+
+function togglePrompt(cat, i) {
+  const key = cat + '::' + i;
+  disabledPrompts[key] = !disabledPrompts[key];
+  if (!disabledPrompts[key]) delete disabledPrompts[key];
+  saveState();
+  renderCatList();
+}
+
+function toggleAll(state) {
+  Object.keys(data).forEach(k => activeCategories[k] = state);
+  saveState();
+  renderCatList();
+}
+
+// ── Generate ──────────────────────────────────────────────────────
+function stripSuffix(text) {
+  return text.replace(/[\s.,]*everything else stays the same\.?/gi, '').trim().replace(/\.$/, '');
+}
+
+function resetCooldown() {
+  cooldownMap = {};
+  genCount = 0;
+}
+
+function generatePrompt() {
+  genCount++;
+  const selected = Object.keys(data).filter(k => activeCategories[k]);
+  if (selected.length === 0) { alert('Enable at least one category.'); return; }
+
+  const picks = [];
+  const pickDetails = [];
+
+  for (const cat of selected) {
+    const pool = data[cat]
+      .map((p, i) => ({ p, i }))
+      .filter(({ i }) => !disabledPrompts[cat + '::' + i]);
+    if (pool.length === 0) continue;
+
+    const available = pool.filter(({ i }) => {
+      const lastUsed = cooldownMap[cat + '::' + i];
+      return lastUsed === undefined || (genCount - lastUsed) > cooldownLength;
+    });
+
+    const chooseFrom = available.length > 0 ? available : pool;
+    const chosen = chooseFrom[Math.floor(Math.random() * chooseFrom.length)];
+    cooldownMap[cat + '::' + chosen.i] = genCount;
+    picks.push(stripSuffix(chosen.p));
+    pickDetails.push({ cat, pick: chosen.p, cooledOut: available.length === 0 });
+  }
+
+  if (picks.length === 0) { alert('No enabled prompts found.'); return; }
+
+  document.getElementById('output-picks').innerHTML = pickDetails.map(p => `
+    <div class="pick-row">
+      <span class="pick-label">${p.cat}</span>
+      ${p.cooledOut ? '<span style="font-size:10px;color:#aa7722;padding:2px 5px;background:#2a1f00;border-radius:3px;white-space:nowrap;">all cooled</span>' : ''}
+      <span class="pick-text">${p.pick.substring(0,90)}${p.pick.length>90?'…':''}</span>
+    </div>
+  `).join('');
+
+  const customOn = document.getElementById('custom-end-toggle').checked;
+  const customText = document.getElementById('custom-end-text').value.trim();
+  let final = picks.join(' ') + ' Everything else stays the same. ' + CONSISTENCY;
+  if (customOn && customText) final += ' ' + customText;
+
+  document.getElementById('output-text').value = final;
+  document.getElementById('output-box').style.display = 'block';
+  document.getElementById('copy-btn').textContent = 'Copy';
+}
+
+function copyPrompt() {
+  navigator.clipboard.writeText(document.getElementById('output-text').value).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+// ── Editor ────────────────────────────────────────────────────────
+function renderEditor() {
+  const el = document.getElementById('editor-cats');
+  el.innerHTML = '';
+  Object.keys(data).forEach(cat => {
+    const sec = document.createElement('div');
+    sec.className = 'editor-section';
+    const safeId = btoa(encodeURIComponent(cat)).replace(/=/g,'');
+
+    let promptsHtml = data[cat].map((p, i) => `
+      <div class="prompt-item">
+        <textarea onchange="updatePrompt('${cat.replace(/'/g,"\\'")}',${i},this.value)">${p}</textarea>
+        <button class="del-btn" onclick="deletePrompt('${cat.replace(/'/g,"\\'")}',${i})">✕</button>
+      </div>
+    `).join('');
+
+    sec.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;flex-wrap:wrap;">
+        <h3 style="flex:1;min-width:0;">${cat} <span style="font-weight:400;color:#555;font-size:11px;">${data[cat].length} prompts</span></h3>
+        <button class="btn danger" onclick="deleteCategory('${cat.replace(/'/g,"\\'")}')">Delete</button>
+      </div>
+      ${promptsHtml}
+      <hr class="divider">
+      <p style="font-size:11px;color:#666;margin-bottom:6px;">Add prompts — one per line:</p>
+      <div class="bulk-row">
+        <textarea class="bulk-area" id="bulk-${safeId}" placeholder="Paste one or more prompts here, one per line..."></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+        <button class="btn primary" onclick="bulkAdd('${cat.replace(/'/g,"\\'")}','${safeId}')">+ Add prompts</button>
+      </div>
+    `;
+    el.appendChild(sec);
+  });
+}
+
+function updatePrompt(cat, i, val) {
+  data[cat][i] = val;
+  saveState();
+}
+
+function deletePrompt(cat, i) {
+  data[cat].splice(i, 1);
+  const key = cat + '::' + i;
+  delete disabledPrompts[key];
+  saveState();
+  renderEditor();
+  renderCatList();
+}
+
+function bulkAdd(cat, safeId) {
+  const ta = document.getElementById('bulk-' + safeId);
+  const lines = ta.value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  if (lines.length === 0) return;
+  data[cat].push(...lines);
+  ta.value = '';
+  saveState();
+  renderEditor();
+  renderCatList();
+  showToast(`Added ${lines.length} prompt${lines.length > 1 ? 's' : ''}`);
+}
+
+function deleteCategory(cat) {
+  if (!confirm('Delete "' + cat + '" and all its prompts?')) return;
+  delete data[cat];
+  delete activeCategories[cat];
+  Object.keys(disabledPrompts).forEach(k => { if (k.startsWith(cat + '::')) delete disabledPrompts[k]; });
+  saveState();
+  renderEditor();
+  renderCatList();
+}
+
+function addCategory() {
+  const input = document.getElementById('new-cat-name');
+  const name = input.value.trim();
+  if (!name || data[name]) return;
+  data[name] = [];
+  activeCategories[name] = true;
+  input.value = '';
+  saveState();
+  renderEditor();
+  renderCatList();
+}
+
+// ── Import / Export ───────────────────────────────────────────────
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'promptimizer_library.json';
+  a.click();
+}
+
+function importJSON(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      Object.keys(imported).forEach(k => { data[k] = imported[k]; activeCategories[k] = true; });
+      saveState();
+      renderCatList();
+      renderEditor();
+      showToast('Imported ' + Object.keys(imported).length + ' categories');
+    } catch { alert('Invalid JSON file.'); }
+  };
+  reader.readAsText(file);
+}
+
+function saveAsHTML() {
+  // Inject current data into a fresh copy of this page
+  const src = document.documentElement.outerHTML;
+  const updated = src.replace(
+    /const DEFAULT_DATA = \{[\s\S]*?\};\n\n/,
+    'const DEFAULT_DATA = ' + JSON.stringify(data, null, 2) + ';\n\n'
+  );
+  const blob = new Blob([updated], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'promptimizer.html';
+  a.click();
+  showToast('Saved as HTML');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg + ' ✓';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+loadState();
+renderCatList();
+
+// PWA service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
